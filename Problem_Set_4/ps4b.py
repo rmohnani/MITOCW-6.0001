@@ -58,8 +58,6 @@ def get_story_string():
 
 ### END HELPER CODE ###
 
-# print(get_story_string())
-
 WORDLIST_FILENAME = 'Problem_Set_4/words.txt'
 
 class Message(object):
@@ -107,33 +105,23 @@ class Message(object):
         Returns: a dictionary mapping a letter (string) to
                  another letter (string).
         '''
-        cipher_key = {}
+        shift_dict = {}
         assert 0 <= shift < 26, "Shift value not in range 0 to 25 inclusive."
         lowercase = string.ascii_lowercase
-        # uppercase = string.ascii_uppercase
 
         for i in range(len(lowercase)):
-            # print(i)
             if i + shift <= 25:
-                cipher_key[lowercase[i]] = lowercase[i + shift]
+                shift_dict[lowercase[i]] = lowercase[i + shift]
             else:
-                cipher_key[lowercase[i]] = lowercase[i + shift - 26]
+                shift_dict[lowercase[i]] = lowercase[i + shift - 26]
+        
+        # Instead of repeating same process above for uppercase, decided to simply take the existing 
+        # lowercase key-value pairs in the dictionary and add uppercase versions to the dictionary
 
-        # for i in range(len(uppercase)):
-        #     # print(i)
-        #     if i + shift <= 25:
-        #         cipher_key[uppercase[i]] = uppercase[i + shift]
-        #     else:
-        #         cipher_key[uppercase[i]] = uppercase[i + shift - 26]
+        for item in list(shift_dict):
+            shift_dict[item.upper()] = shift_dict[item].upper()
 
-        # if len(cipher_key) == 26:
-        for item in list(cipher_key):
-            cipher_key[item.upper()] = cipher_key[item].upper()
-
-        # print(len(cipher_key))
-        return cipher_key
-
-
+        return shift_dict
 
     def apply_shift(self, shift):
         '''
@@ -147,31 +135,19 @@ class Message(object):
         Returns: the message text (string) in which every character is shifted
              down the alphabet by the input shift
         '''
-        cipher_key = self.build_shift_dict(shift)
-        # print(cipher_key)
-        encrypted = ""
-
+        shift_dict = self.build_shift_dict(shift)
+        shifted = ""
 
         for char in self.message_text:
-            if char in cipher_key:
-                encrypted += cipher_key[char]
+            if char in shift_dict:
+                shifted += shift_dict[char]
             else:
-                encrypted += char
-            # print(char)
+                shifted += char
 
-        return encrypted
+        return shifted
 
     def __str__(self):
         return self.message_text
-
-# a = Message("Hello")
-# b = Message("Hello, World!")
-# print(a)
-# print(a.build_shift_dict(2))
-# print(a.apply_shift(2))
-# print(b.apply_shift(4))
-# b.apply_shift(4)
-
 
 class PlaintextMessage(Message):
     def __init__(self, text, shift):
@@ -191,7 +167,7 @@ class PlaintextMessage(Message):
         '''
         Message.__init__(self, text)
         self.shift = shift
-        self.encryption_dict = self.build_shift_dict(shift)
+        self.encryption_dict = self.build_shift_dict(self.shift)
         self.message_text_encrypted = self.apply_shift(self.shift)
 
     def get_shift(self):
@@ -228,15 +204,11 @@ class PlaintextMessage(Message):
 
         Returns: nothing
         '''
-        pass #delete this line and replace with your code here
+        assert 0 <= shift < 26, "Shift value not in range 0 to 25 inclusive."
+        self.__init__(self.message_text, shift)
 
     def __str__(self):
-        # return self.message_text + " " + str(self.shift) + " " + str(self.encryption_dict) + " " + self.message_text_encrypted
         return self.message_text + "," + str(self.shift) + "," + self.message_text_encrypted
-
-a = PlaintextMessage("hello", 4)
-print(a)
-print(a.get_encryption_dict())
 
 class CiphertextMessage(Message):
     def __init__(self, text):
@@ -249,7 +221,7 @@ class CiphertextMessage(Message):
             self.message_text (string, determined by input text)
             self.valid_words (list, determined using helper function load_words)
         '''
-        pass #delete this line and replace with your code here
+        Message.__init__(self, text)
 
     def decrypt_message(self):
         '''
@@ -267,22 +239,87 @@ class CiphertextMessage(Message):
         Returns: a tuple of the best shift value used to decrypt the message
         and the decrypted message text using that shift value
         '''
-        pass #delete this line and replace with your code here
+        # ### Initial Implementation through using a dictionary
+
+        # all_dict = {}
+        # for s in range(26):
+        #     decrypted = self.apply_shift(s)
+        #     words = decrypted.split(" ")
+        #     count = 0
+        #     for item in words:
+        #         if is_word(self.valid_words, item):
+        #             count += 1
+        #         all_dict[26 - s] = (decrypted, count)
+
+        # max_valid_words = 0
+        # decrypted_message = ""
+        # best_shift_value = ""
+
+        # for poss in all_dict.items():
+        #     if poss[1][1] > max_valid_words:
+        #         decrypted_message = poss[1][0]
+        #         max_valid_words = poss[1][1]
+        #         best_shift_value = poss[0]
+
+        # return (best_shift_value, decrypted_message)
+
+        ### More efficient implementation just using trackers
+        max_valid_words = 0
+        decrypted_message = ""
+        best_shift_value = ""
+
+        for s in range(26):
+            decrypted = self.apply_shift(s)
+            words = decrypted.split(" ")
+            count = 0
+            for item in words:
+                if is_word(self.valid_words, item):
+                    count += 1
+            if count > max_valid_words:
+                decrypted_message = decrypted
+                max_valid_words = count
+                best_shift_value = 26 - s
+
+        return (best_shift_value, decrypted_message)
+
+    def __str__(self):
+        return self.message_text
 
 if __name__ == '__main__':
 
-#    #Example test case (PlaintextMessage)
-#    plaintext = PlaintextMessage('hello', 2)
-#    print('Expected Output: jgnnq')
-#    print('Actual Output:', plaintext.get_message_text_encrypted())
-#
-#    #Example test case (CiphertextMessage)
-#    ciphertext = CiphertextMessage('jgnnq')
-#    print('Expected Output:', (24, 'hello'))
-#    print('Actual Output:', ciphertext.decrypt_message())
+   #Example test case (PlaintextMessage)
+    plaintext1 = PlaintextMessage('hello', 2)
+    print('Expected Output: jgnnq')
+    print('Actual Output:', plaintext1.get_message_text_encrypted())
+
+   #Example test case (CiphertextMessage)
+    ciphertext1 = CiphertextMessage('jgnnq')
+    print('Expected Output:', (2, 'hello'))
+    print('Actual Output:', ciphertext1.decrypt_message())
 
     #TODO: WRITE YOUR TEST CASES HERE
 
-    #TODO: best shift value and unencrypted story
+    plaintext2 = PlaintextMessage('everybody is Home!', 7)
+    print('Expected Output: lclyfivkf pz Ovtl!')
+    print('Actual Output:', plaintext2.get_message_text_encrypted())
 
-    pass #delete this line and replace with your code here
+    plaintext3 = PlaintextMessage('Good morning.', 13)
+    print('Expected Output: Tbbq zbeavat.')
+    print('Actual Output:', plaintext3.get_message_text_encrypted())
+
+    ciphertext2 = CiphertextMessage('mubb tedu')
+    print('Expected Output:', (16, 'well done'))
+    print('Actual Output:', ciphertext2.decrypt_message())
+
+    ciphertext3 = CiphertextMessage('Gdaz wzajmz Yzvoc. Nomziboc wzajmz Rzvfiznn. Ejpmizt wzajmz Yznodivodji.')
+    print('Expected Output:', (21, 'Life before Death. Strength before Weakness. Journey before Destination.'))
+    print('Actual Output:', ciphertext3.decrypt_message())
+
+    #TODO: best shift value and unencrypted story
+    story = CiphertextMessage(get_story_string())
+    print(story.decrypt_message())
+    """(14, 'Jack Florey is a mythical character created on the spur of a moment to 
+    help cover an insufficiently planned hack. He has been registered for classes at
+    MIT twice before, but has reportedly never passed aclass. It has been the tradition
+    of the residents of East Campus to become Jack Florey for a few nights each year 
+    to educate incoming students in the ways, means, and ethics of hacking.')"""
