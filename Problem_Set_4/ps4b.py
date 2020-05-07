@@ -239,31 +239,6 @@ class CiphertextMessage(Message):
         Returns: a tuple of the best shift value used to decrypt the message
         and the decrypted message text using that shift value
         '''
-        # ### Initial Implementation through using a dictionary
-
-        # all_dict = {}
-        # for s in range(26):
-        #     decrypted = self.apply_shift(s)
-        #     words = decrypted.split(" ")
-        #     count = 0
-        #     for item in words:
-        #         if is_word(self.valid_words, item):
-        #             count += 1
-        #         all_dict[26 - s] = (decrypted, count)
-
-        # max_valid_words = 0
-        # decrypted_message = ""
-        # best_shift_value = ""
-
-        # for poss in all_dict.items():
-        #     if poss[1][1] > max_valid_words:
-        #         decrypted_message = poss[1][0]
-        #         max_valid_words = poss[1][1]
-        #         best_shift_value = poss[0]
-
-        # return (best_shift_value, decrypted_message)
-
-        ### More efficient implementation just using trackers
         max_valid_words = 0
         decrypted_message = ""
         best_shift_value = ""
